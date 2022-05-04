@@ -9,14 +9,13 @@ import (
 	"os/signal"
 
 	"github.com/ROMUALDO-TXT/klever-challenge-golang/database"
-	//pb "github.com/ROMUALDO-TXT/klever-challenge-golang/proto"
+	pb "github.com/ROMUALDO-TXT/klever-challenge-golang/proto"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 )
 
 var collection *mongo.Collection
-
-//var blogService *pb.BlogServiceServer
+var blogService *pb.BlogServiceServer
 var mongoCtx context.Context
 
 var port string = ":" + os.Getenv("SERVER_PORT")
@@ -26,6 +25,7 @@ func main() {
 	database.CreateConnection()
 	mongoCtx = database.GetContext()
 	collection = database.GetCollection("posts")
+	//blogService = service
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fmt.Println("Starting server on port", port)
@@ -38,7 +38,7 @@ func main() {
 
 	opts := []grpc.ServerOption{}
 	server := grpc.NewServer(opts...)
-	//pb.
+	//pb.NewBlogServiceClient(server, )
 
 	go func() {
 		if err := server.Serve(lis); err != nil {
