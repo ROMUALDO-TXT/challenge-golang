@@ -1,0 +1,10 @@
+version: '3.6'
+services:
+  app:
+    container_name: blog-client
+    hostname: blog-client
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    ports:
+      - 8080:8080

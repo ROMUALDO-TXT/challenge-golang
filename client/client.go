@@ -10,6 +10,7 @@ import (
 	"github.com/ROMUALDO-TXT/klever-challenge-golang/models"
 	pb "github.com/ROMUALDO-TXT/klever-challenge-golang/proto"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 )
 
@@ -18,6 +19,12 @@ var client pb.BlogServiceClient
 var blogs []models.Blog
 
 func main() {
+
+	err := godotenv.Load("./.env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	conn, err := grpc.Dial(os.Getenv("SERVER_URL"), grpc.WithInsecure())
 
 	if err != nil {

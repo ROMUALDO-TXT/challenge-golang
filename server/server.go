@@ -10,42 +10,46 @@ import (
 
 	"github.com/ROMUALDO-TXT/klever-challenge-golang/database"
 	pb "github.com/ROMUALDO-TXT/klever-challenge-golang/proto"
+	"github.com/ROMUALDO-TXT/klever-challenge-golang/services"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 )
 
 var collection *mongo.Collection
-var blogService *pb.BlogServiceServer
+var blogService pb.BlogServiceServer
 var mongoCtx context.Context
 
-var port string = ":" + os.Getenv("SERVER_PORT")
-
 func main() {
+	err := godotenv.Load("./.env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	database.CreateConnection()
 	mongoCtx = database.GetContext()
 	collection = database.GetCollection("posts")
-	//blogService = service
+	blogService = services.NewService(collection, mongoCtx)
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	fmt.Println("Starting server on port", port)
+	fmt.Println("Starting server on port", os.Getenv("SERVER_PORT"))
 
-	lis, err := net.Listen("tcp", port)
+	lis, err := net.Listen("tcp", os.Getenv("SERVER_PORT"))
 
 	if err != nil {
-		log.Fatalf("fail to listen to port %v", port)
+		log.Fatalf("fail to listen to port %v", os.Getenv("SERVER_PORT"))
 	}
 
 	opts := []grpc.ServerOption{}
 	server := grpc.NewServer(opts...)
-	//pb.NewBlogServiceClient(server, )
+	pb.RegisterBlogServiceServer(server, blogService)
 
 	go func() {
 		if err := server.Serve(lis); err != nil {
 			log.Fatalf("Failed to serve: %v", err)
 		}
 	}()
-	fmt.Println("Server succesfully started on port ", port)
+	fmt.Println("Server succesfully started on port ", os.Getenv("SERVER_PORT"))
 
 	c := make(chan os.Signal)
 

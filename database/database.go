@@ -28,9 +28,9 @@ func CloseConnection() {
 }
 
 func CreateConnection() {
-	client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGODB_URL")))
+	client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGO_DB_URL")))
 	if err != nil {
-		log.Fatalf("Couldn't create MongoDB Client: %v", err)
+		log.Fatalf("Couldn't create MongoDB Client: %v", os.Getenv("MONGO_DB_URL"))
 	}
 
 	mongoCtx = context.Background()

@@ -1,0 +1,25 @@
+FROM golang:alpine as build-env
+
+ENV GO111MODULE=auto
+
+RUN apk update && apk add bash ca-certificates git gcc g++ libc-dev
+
+RUN mkdir /blog-client
+RUN mkdir -p /blog-client/proto 
+
+WORKDIR /blog-client
+
+COPY ./proto/blog.pb.go //proto
+COPY ./client/main.go /crypto-vote-client
+COPY ./database /blog-client/database
+COPY ./services /blog-client/services
+COPY ./models /blog-client/models
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+
+RUN go build -o blog-client .
+
+CMD ./blog-client
