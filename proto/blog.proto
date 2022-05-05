@@ -16,7 +16,6 @@ message Blog {
     int64 downvote = 6;
     int64 score = 7;
     google.protobuf.Timestamp created_at = 8;
-    optional google.protobuf.Timestamp deleted_at = 9;
 }
 
 message UpvoteReq{

@@ -3,6 +3,7 @@ module github.com/ROMUALDO-TXT/klever-challenge-golang
 go 1.18
 
 require (
+	github.com/joho/godotenv v1.4.0
 	go.mongodb.org/mongo-driver v1.9.0
 	google.golang.org/grpc v1.46.0
 	google.golang.org/protobuf v1.28.0
@@ -13,7 +14,6 @@ require (
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
-	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect

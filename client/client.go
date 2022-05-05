@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/ROMUALDO-TXT/klever-challenge-golang/models"
 	pb "github.com/ROMUALDO-TXT/klever-challenge-golang/proto"
@@ -25,7 +24,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	conn, err := grpc.Dial(os.Getenv("SERVER_URL"), grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
 
 	if err != nil {
 		panic(err)
@@ -47,7 +46,9 @@ func main() {
 func createBlog(ctx *gin.Context) {
 
 	blog := pb.CreateBlogReq{}
+
 	err := ctx.ShouldBindJSON(&blog)
+
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

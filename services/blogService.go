@@ -3,8 +3,9 @@ package services
 import (
 	"context"
 	"fmt"
+	"time"
 
-	models "github.com/ROMUALDO-TXT/klever-challenge-golang/models"
+	"github.com/ROMUALDO-TXT/klever-challenge-golang/models"
 	pb "github.com/ROMUALDO-TXT/klever-challenge-golang/proto"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -38,7 +39,7 @@ func (server *blogServiceServer) CreateBlog(ctx context.Context, req *pb.CreateB
 		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Verify the fields!"))
 	}
 	if req.GetAuthorId() == "" {
-		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Author ID can1t be empty!"))
+		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf(req.GetAuthorId()))
 	}
 
 	data := models.Blog{
@@ -48,6 +49,7 @@ func (server *blogServiceServer) CreateBlog(ctx context.Context, req *pb.CreateB
 		Upvotes:   0,
 		Downvotes: 0,
 		Score:     0,
+		CreatedAt: time.Now(),
 	}
 
 	result, err := server.collection.InsertOne(server.mongoCtx, data)
@@ -86,9 +88,14 @@ func (server *blogServiceServer) DeleteBlog(ctx context.Context, req *pb.DeleteB
 		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Could not convert to ObjectId: %v", err))
 	}
 
-	_, err = server.collection.DeleteOne(ctx, bson.M{"_id": oid})
+	r, err := server.collection.DeleteOne(ctx, bson.M{"_id": oid})
+
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Could not convert to ObjectId: %v", err))
+		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Could not delete the blog: Id not found"))
+	}
+
+	if r.DeletedCount == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Could not delete the blog: %v", err))
 	}
 
 	return &pb.SuccessRes{
@@ -112,12 +119,17 @@ func (server *blogServiceServer) ListBlogs(req *pb.ListBlogsReq, stream pb.BlogS
 			return status.Errorf(codes.Unavailable, fmt.Sprintf("Could not decode data: %v", err))
 		}
 
+		fmt.Println(data)
+
 		stream.Send(&pb.BlogRes{
 			Blog: &pb.Blog{
 				Id:       data.Id.Hex(),
 				AuthorId: data.AuthorId,
 				Content:  data.Content,
 				Title:    data.Title,
+				Upvote:   data.Upvotes,
+				Downvote: data.Downvotes,
+				Score:    data.Score,
 			},
 		})
 	}
@@ -142,9 +154,14 @@ func (server *blogServiceServer) Upvote(ctx context.Context, req *pb.UpvoteReq) 
 
 	filter := bson.M{"_id": oid}
 
-	_, err = server.collection.UpdateOne(ctx, filter, bson.M{"$inc": bson.M{"upvotes": 1, "score": 1}}, options.Update().SetUpsert(true))
+	r, err := server.collection.UpdateOne(ctx, filter, bson.M{"$inc": bson.M{"upvotes": 1, "score": 1}}, options.Update().SetUpsert(false))
+
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("Could not find a blog with id %s: %v", req.GetId(), err))
+		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("Could not Upvote the blog %s: %v", req.GetId(), err))
+	}
+
+	if r.MatchedCount == 0 {
+		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("Could not Upvote the blog %s: Blog does not exists", req.GetId()))
 	}
 
 	return &pb.SuccessRes{
@@ -167,9 +184,14 @@ func (server *blogServiceServer) Downvote(ctx context.Context, req *pb.DownvoteR
 
 	filter := bson.M{"_id": oid}
 
-	_, err = server.collection.UpdateOne(ctx, filter, bson.M{"$inc": bson.M{"downvotes": 1, "score": -1}}, options.Update().SetUpsert(true))
+	r, err := server.collection.UpdateOne(ctx, filter, bson.M{"$inc": bson.M{"downvotes": 1, "score": -1}}, options.Update().SetUpsert(false))
+
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("Could not find a blog with id %s: %v", req.GetId(), err))
+		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("Could not Downvote the blog %s: %v", req.GetId(), err))
+	}
+
+	if r.MatchedCount == 0 {
+		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("Could not Downvote the blog %s: Blog does not exists", req.GetId()))
 	}
 
 	return &pb.SuccessRes{
