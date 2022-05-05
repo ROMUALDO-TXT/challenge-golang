@@ -1,7 +1,6 @@
 package models
 
 import (
-	"time"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -13,5 +12,4 @@ type Blog struct {
 	Upvotes   int64              `bson:"upvotes"`
 	Downvotes int64              `bson:"downvotes"`
 	Score     int64              `bson:"score"`
-	CreatedAt time.Time			 `bson:"created_at"`
 }

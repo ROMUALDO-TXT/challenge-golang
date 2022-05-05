@@ -62,13 +62,13 @@ func (server *blogServiceServer) CreateBlog(ctx context.Context, req *pb.CreateB
 
 	response := &pb.BlogRes{
 		Blog: &pb.Blog{
-			Id:       oid.Hex(),
-			AuthorId: data.AuthorId,
-			Title:    data.Title,
-			Content:  data.Content,
-			Upvote:   data.Upvotes,
-			Downvote: data.Downvotes,
-			Score:    data.Score,
+			Id:        oid.Hex(),
+			AuthorId:  data.AuthorId,
+			Title:     data.Title,
+			Content:   data.Content,
+			Upvotes:   data.Upvotes,
+			Downvotes: data.Downvotes,
+			Score:     data.Score,
 		},
 	}
 
@@ -92,7 +92,7 @@ func (server *blogServiceServer) DeleteBlog(ctx context.Context, req *pb.DeleteB
 	}
 
 	if r.DeletedCount == 0 {
-		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Could not delete the blog: %v", err))
+		return &pb.SuccessRes{Success: false}, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Could not delete the blog: %v", err))
 	}
 
 	return &pb.SuccessRes{
@@ -120,13 +120,13 @@ func (server *blogServiceServer) ListBlogs(req *pb.ListBlogsReq, stream pb.BlogS
 
 		stream.Send(&pb.BlogRes{
 			Blog: &pb.Blog{
-				Id:       data.Id.Hex(),
-				AuthorId: data.AuthorId,
-				Content:  data.Content,
-				Title:    data.Title,
-				Upvote:   data.Upvotes,
-				Downvote: data.Downvotes,
-				Score:    data.Score,
+				Id:        data.Id.Hex(),
+				AuthorId:  data.AuthorId,
+				Content:   data.Content,
+				Title:     data.Title,
+				Upvotes:   data.Upvotes,
+				Downvotes: data.Downvotes,
+				Score:     data.Score,
 			},
 		})
 	}
@@ -136,6 +136,40 @@ func (server *blogServiceServer) ListBlogs(req *pb.ListBlogsReq, stream pb.BlogS
 	return nil
 }
 
+func (server *blogServiceServer) ReadBlog(ctx context.Context, req *pb.ReadBlogReq) (*pb.BlogRes, error) {
+
+	if req.GetId() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Verify the fields!"))
+	}
+
+	oid, err := primitive.ObjectIDFromHex(req.GetId())
+	if err != nil {
+		return nil, status.Errorf(
+			codes.InvalidArgument,
+			fmt.Sprintf("Could not convert the supplied blog id to a MongoDB ObjectId: %v", err),
+		)
+	}
+
+	result := server.collection.FindOne(ctx, bson.M{"_id": oid})
+	data := models.Blog{}
+	if err := result.Decode(&data); err != nil {
+		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("Could not find crypto with Object Id %s: %v", req.GetId(), err))
+	}
+
+	response := &pb.BlogRes{
+		Blog: &pb.Blog{
+			Id:        data.Id.Hex(),
+			AuthorId:  data.AuthorId,
+			Content:   data.Content,
+			Title:     data.Title,
+			Upvotes:   data.Upvotes,
+			Downvotes: data.Downvotes,
+			Score:     data.Score,
+		},
+	}
+
+	return response, nil
+}
 func (server *blogServiceServer) Upvote(ctx context.Context, req *pb.UpvoteReq) (*pb.SuccessRes, error) {
 	if req.GetId() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Verify the fields!"))
@@ -158,7 +192,7 @@ func (server *blogServiceServer) Upvote(ctx context.Context, req *pb.UpvoteReq) 
 	}
 
 	if r.MatchedCount == 0 {
-		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("Could not Upvote the blog %s: Blog does not exists", req.GetId()))
+		return &pb.SuccessRes{Success: false}, status.Errorf(codes.NotFound, fmt.Sprintf("Could not Upvote the blog %s: Blog does not exists", req.GetId()))
 	}
 
 	return &pb.SuccessRes{
@@ -188,7 +222,7 @@ func (server *blogServiceServer) Downvote(ctx context.Context, req *pb.DownvoteR
 	}
 
 	if r.MatchedCount == 0 {
-		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("Could not Downvote the blog %s: Blog does not exists", req.GetId()))
+		return &pb.SuccessRes{Success: false}, status.Errorf(codes.NotFound, fmt.Sprintf("Could not Downvote the blog %s: Blog does not exists", req.GetId()))
 	}
 
 	return &pb.SuccessRes{
