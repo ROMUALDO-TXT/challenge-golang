@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/ROMUALDO-TXT/klever-challenge-golang/models"
 	pb "github.com/ROMUALDO-TXT/klever-challenge-golang/proto"
@@ -12,7 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -49,7 +47,6 @@ func (server *blogServiceServer) CreateBlog(ctx context.Context, req *pb.CreateB
 		Upvotes:   0,
 		Downvotes: 0,
 		Score:     0,
-		CreatedAt: time.Now(),
 	}
 
 	result, err := server.collection.InsertOne(server.mongoCtx, data)

@@ -4,9 +4,6 @@ package blog;
 
 option go_package = "./proto";
 
-import "google/protobuf/timestamp.proto";
-
-
 message Blog {
     string id = 1;
     string title = 2;
@@ -15,7 +12,6 @@ message Blog {
     int64 upvote = 5;
     int64 downvote = 6;
     int64 score = 7;
-    google.protobuf.Timestamp created_at = 8;
 }
 
 message UpvoteReq{
