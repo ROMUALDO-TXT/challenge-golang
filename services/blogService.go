@@ -29,7 +29,6 @@ func NewService(collection *mongo.Collection, mongoCtx context.Context) pb.BlogS
 }
 
 func (server *blogServiceServer) CreateBlog(ctx context.Context, req *pb.CreateBlogReq) (*pb.BlogRes, error) {
-	//Validation
 	if req.GetTitle() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Verify the fields!"))
 	}

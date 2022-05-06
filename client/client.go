@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/ROMUALDO-TXT/klever-challenge-golang/models"
 	pb "github.com/ROMUALDO-TXT/klever-challenge-golang/proto"
@@ -24,7 +25,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost"+os.Getenv("PORT"), grpc.WithInsecure())
 
 	if err != nil {
 		panic(err)

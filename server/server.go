@@ -32,12 +32,12 @@ func main() {
 	blogService = services.NewService(collection, mongoCtx)
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	fmt.Println("Starting server on port", os.Getenv("SERVER_PORT"))
+	fmt.Println("Starting server on port", os.Getenv("PORT"))
 
-	lis, err := net.Listen("tcp", os.Getenv("SERVER_PORT"))
+	lis, err := net.Listen("tcp", os.Getenv("PORT"))
 
 	if err != nil {
-		log.Fatalf("fail to listen to port %v", os.Getenv("SERVER_PORT"))
+		log.Fatalf("fail to listen to port %v", os.Getenv("PORT"))
 	}
 
 	opts := []grpc.ServerOption{}
@@ -49,7 +49,7 @@ func main() {
 			log.Fatalf("Failed to serve: %v", err)
 		}
 	}()
-	fmt.Println("Server succesfully started on port ", os.Getenv("SERVER_PORT"))
+	fmt.Println("Server succesfully started on port ", os.Getenv("PORT"))
 
 	c := make(chan os.Signal)
 

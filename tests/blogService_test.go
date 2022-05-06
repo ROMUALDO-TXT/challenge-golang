@@ -34,7 +34,7 @@ var blogService pb.BlogServiceServer
 var mongoCtx context.Context
 
 func init() {
-	os.Setenv("MONGO_DB_URL", "mongodb://userAdmin:passAdmin@localhost:27017/?authSource=admin")
+	os.Setenv("MONGO_DB_URL", "mongodb+srv://goblogtestuser:kKJ7oj3f0S3IuFJD@cluster0.cyk1r.mongodb.net/Klever-blog?retryWrites=true&w=majority")
 
 	database.CreateConnection()
 
